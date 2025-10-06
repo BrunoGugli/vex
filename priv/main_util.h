@@ -109,8 +109,8 @@ static inline ULong vex_sx_to_64( ULong x, UInt n )
 
 typedef
    enum {
-      VexAllocModeTEMP, 
-      VexAllocModePERM 
+      VexAllocModeTEMP,
+      VexAllocModePERM
    }
    VexAllocMode;
 
