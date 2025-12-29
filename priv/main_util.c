@@ -49,10 +49,10 @@
    Nehemiah 1 GHz (a weedy machine) can satisfy 27 million calls/
    second to LibVEX_Alloc(16) -- that is, allocate memory at over 400
    MByte/sec.  Once the size increases enough to fall out of the cache
-   into memory, the rate falls by about a factor of 3. 
+   into memory, the rate falls by about a factor of 3.
 */
 
-#define N_TEMPORARY_BYTES 5000000
+#define N_TEMPORARY_BYTES 50000000
 
 static HChar  temporary[N_TEMPORARY_BYTES] __attribute__((aligned(REQ_ALIGN)));
 static HChar* temporary_first = &temporary[0];
@@ -90,13 +90,13 @@ void vexAllocSanityCheck ( void )
    if (mode == VexAllocModeTEMP){
       vassert(private_LibVEX_alloc_first == temporary_first);
       vassert(private_LibVEX_alloc_last  == temporary_last);
-   } 
+   }
    else
    if (mode == VexAllocModePERM) {
       vassert(private_LibVEX_alloc_first == permanent_first);
       vassert(private_LibVEX_alloc_last  == permanent_last);
    }
-   else 
+   else
       vassert(0);
 
 #  define IS_WORD_ALIGNED(p)   (0 == (((HWord)p) & (sizeof(HWord)-1)))
@@ -122,12 +122,12 @@ void vexSetAllocMode ( VexAllocMode m )
    /* Save away the current allocation point .. */
    if (mode == VexAllocModeTEMP){
       temporary_curr = private_LibVEX_alloc_curr;
-   } 
+   }
    else
    if (mode == VexAllocModePERM) {
       permanent_curr = private_LibVEX_alloc_curr;
    }
-   else 
+   else
       vassert(0);
 
    /* Did that screw anything up? */
@@ -137,14 +137,14 @@ void vexSetAllocMode ( VexAllocMode m )
       private_LibVEX_alloc_first = temporary_first;
       private_LibVEX_alloc_curr  = temporary_curr;
       private_LibVEX_alloc_last  = temporary_last;
-   } 
+   }
    else
    if (m == VexAllocModePERM) {
       private_LibVEX_alloc_first = permanent_first;
       private_LibVEX_alloc_curr  = permanent_curr;
       private_LibVEX_alloc_last  = permanent_last;
    }
-   else 
+   else
       vassert(0);
 
    mode = m;
@@ -163,7 +163,7 @@ void private_LibVEX_alloc_OOM(void)
    if (private_LibVEX_alloc_first == &permanent[0]) pool = "PERM";
    vex_printf("VEX temporary storage exhausted.\n");
    vex_printf("Pool = %s,  start %p curr %p end %p (size %lld)\n",
-              pool, 
+              pool,
               private_LibVEX_alloc_first,
               private_LibVEX_alloc_curr,
               private_LibVEX_alloc_last,
@@ -175,7 +175,7 @@ void private_LibVEX_alloc_OOM(void)
 void vexSetAllocModeTEMP_and_clear ( void )
 {
    /* vassert(vex_initdone); */ /* causes infinite assert loops */
-   temporary_bytes_allocd_TOT 
+   temporary_bytes_allocd_TOT
       += (ULong)(private_LibVEX_alloc_curr - private_LibVEX_alloc_first);
 
    mode = VexAllocModeTEMP;
@@ -299,7 +299,7 @@ void vex_bzero ( void* sV, SizeT n )
 /* Convert N0 into ascii in BUF, which is assumed to be big enough (at
    least 67 bytes long).  Observe BASE, SYNED and HEXCAPS. */
 static
-void convert_int ( /*OUT*/HChar* buf, Long n0, 
+void convert_int ( /*OUT*/HChar* buf, Long n0,
                    Int base, Bool syned, Bool hexcaps )
 {
    ULong u0;
@@ -329,7 +329,7 @@ void convert_int ( /*OUT*/HChar* buf, Long n0,
 
    buf[bufi] = 0;
    for (i = 0; i < bufi; i++)
-      if (buf[i] > '9') 
+      if (buf[i] > '9')
          buf[i] = toHChar(buf[i] + (hexcaps ? 'A' : 'a') - '9' - 1);
 
    i = 0;
@@ -375,11 +375,11 @@ UInt vprintf_wrk ( void(*sink)(HChar),
 
       if (!format)
          break;
-      if (*format == 0) 
+      if (*format == 0)
          break;
 
       if (*format != '%') {
-         PUT(*format); 
+         PUT(*format);
          format++;
          continue;
       }
@@ -461,8 +461,8 @@ UInt vprintf_wrk ( void(*sink)(HChar),
             PAD(len1); PUTSTR(intbuf); PAD(len3);
             break;
          }
-         case 'u': 
-         case 'x': 
+         case 'u':
+         case 'x':
          case 'X': {
             Int   base = *format == 'u' ? 10 : 16;
             Bool  hexcaps = True; /* *format == 'X'; */
@@ -482,7 +482,7 @@ UInt vprintf_wrk ( void(*sink)(HChar),
             PAD(len1); PUTSTR(intbuf); PAD(len3);
             break;
          }
-         case 'p': 
+         case 'p':
          case 'P': {
             Bool hexcaps = toBool(*format == 'P');
             ULong l = (Addr)va_arg(ap, void*);
@@ -520,7 +520,7 @@ UInt vprintf_wrk ( void(*sink)(HChar),
 }
 
 
-/* A general replacement for printf().  Note that only low-level 
+/* A general replacement for printf().  Note that only low-level
    debugging info should be sent via here.  The official route is to
    to use vg_message().  This interface is deprecated.
 */
@@ -542,9 +542,9 @@ static void add_to_myprintf_buf ( HChar c )
 static UInt vex_vprintf ( const HChar* format, va_list vargs )
 {
    UInt ret;
-   
+
    n_myprintf_buf = 0;
-   myprintf_buf[n_myprintf_buf] = 0;      
+   myprintf_buf[n_myprintf_buf] = 0;
    ret = vprintf_wrk ( add_to_myprintf_buf, format, vargs );
 
    if (n_myprintf_buf > 0) {
