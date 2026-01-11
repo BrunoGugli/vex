@@ -84,7 +84,7 @@
    their arg.
    Otherwise, the macros expand to respectively NULL and vassert(0).
    These macros are used to avoid introducing dependencies to object
-   files not needed for the (only) architecture we are compiling for. 
+   files not needed for the (only) architecture we are compiling for.
 
    To still compile the below for all supported architectures, define
    VEXMULTIARCH. This is used by the file multiarch_main_main.c */
@@ -354,14 +354,15 @@ VexTranslateResult LibVEX_Translate ( VexTranslateArgs* vta )
    VexTranslateResult res;
    VexRegisterUpdates pxControl;
 
-   IRSB *irsb = LibVEX_Lift(vta, &res, &pxControl);
+   IRSB *irsb = LibVEX_Lift(vta, &res, &pxControl, True);
    LibVEX_Codegen(vta, &res, irsb, pxControl);
    return res;
 }
 
 IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
                      /*OUT*/ VexTranslateResult *res,
-                     /*OUT*/ VexRegisterUpdates *pxControl)
+                     /*OUT*/ VexRegisterUpdates *pxControl,
+                     Bool clearAllocArray)
 {
    IRExpr*      (*specHelper)   ( const HChar*, IRExpr**, IRStmt**, Int );
    Bool (*preciseMemExnsFn) ( Int, Int, VexRegisterUpdates );
@@ -388,7 +389,9 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
    vassert(vex_initdone);
    vassert(vta->needs_self_check  != NULL);
 
-   vexSetAllocModeTEMP_and_clear();
+   if(clearAllocArray){
+        vexSetAllocModeTEMP_and_clear();
+   }
    vexAllocSanityCheck();
 
    vex_traceflags = vta->traceflags;
@@ -409,7 +412,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
    switch (vta->arch_guest) {
 
       case VexArchX86:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = X86FN(guest_x86_state_requires_precise_mem_exns);
          disInstrFn              = X86FN(disInstr_X86);
          specHelper              = X86FN(guest_x86_spechelper);
@@ -426,7 +429,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchAMD64:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = AMD64FN(guest_amd64_state_requires_precise_mem_exns);
          disInstrFn              = AMD64FN(disInstr_AMD64);
          specHelper              = AMD64FN(guest_amd64_spechelper);
@@ -443,7 +446,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchPPC32:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = PPC32FN(guest_ppc32_state_requires_precise_mem_exns);
          disInstrFn              = PPC32FN(disInstr_PPC);
          specHelper              = PPC32FN(guest_ppc32_spechelper);
@@ -460,7 +463,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchPPC64:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = PPC64FN(guest_ppc64_state_requires_precise_mem_exns);
          disInstrFn              = PPC64FN(disInstr_PPC);
          specHelper              = PPC64FN(guest_ppc64_spechelper);
@@ -479,7 +482,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchS390X:
-         preciseMemExnsFn 
+         preciseMemExnsFn
             = S390FN(guest_s390x_state_requires_precise_mem_exns);
          disInstrFn              = S390FN(disInstr_S390);
          specHelper              = S390FN(guest_s390x_spechelper);
@@ -496,7 +499,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchARM:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = ARMFN(guest_arm_state_requires_precise_mem_exns);
          disInstrFn              = ARMFN(disInstr_ARM);
          specHelper              = ARMFN(guest_arm_spechelper);
@@ -512,7 +515,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchARM64:
-         preciseMemExnsFn     
+         preciseMemExnsFn
             = ARM64FN(guest_arm64_state_requires_precise_mem_exns);
          disInstrFn              = ARM64FN(disInstr_ARM64);
          specHelper              = ARM64FN(guest_arm64_spechelper);
@@ -529,7 +532,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchMIPS32:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = MIPS32FN(guest_mips32_state_requires_precise_mem_exns);
          disInstrFn              = MIPS32FN(disInstr_MIPS);
          specHelper              = MIPS32FN(guest_mips32_spechelper);
@@ -547,7 +550,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          break;
 
       case VexArchMIPS64:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = MIPS64FN(guest_mips64_state_requires_precise_mem_exns);
          disInstrFn              = MIPS64FN(disInstr_MIPS);
          specHelper              = MIPS64FN(guest_mips64_spechelper);
@@ -628,7 +631,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
    vexAllocSanityCheck();
 
    if (vex_traceflags & VEX_TRACE_FE)
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    " Front end "
                    "------------------------\n\n");
 
@@ -641,7 +644,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
                      pxControl,
                      vta->callback_opaque,
                      disInstrFn,
-                     vta->guest_bytes, 
+                     vta->guest_bytes,
                      vta->guest_bytes_addr,
                      vta->chase_into_ok,
                      vta->archinfo_host.endness,
@@ -661,7 +664,9 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
 
    if (irsb == NULL) {
       /* Access failure. */
-      vexSetAllocModeTEMP_and_clear();
+      if(clearAllocArray){
+        vexSetAllocModeTEMP_and_clear();
+      }
       return NULL;
    }
 
@@ -684,7 +689,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
          const UChar* p = vta->guest_bytes;
          UInt   sum = 0;
          UInt   guest_bytes_read = (UInt)vta->guest_extents->len[0];
-         vex_printf("GuestBytes %llx %u ", vta->guest_bytes_addr, 
+         vex_printf("GuestBytes %llx %u ", vta->guest_bytes_addr,
                                           guest_bytes_read );
          for (i = 0; i < guest_bytes_read; i++) {
             UInt b = (UInt)p[i];
@@ -696,7 +701,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
    }
 
    /* Sanity check the initial IR. */
-   sanityCheckIRSB( irsb, "initial IR", 
+   sanityCheckIRSB( irsb, "initial IR",
                     False/*can be non-flat*/, guest_word_type );
 
    vexAllocSanityCheck();
@@ -710,11 +715,11 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
    // the output of the front end, and iropt never screws up the IR by
    // itself, unless it is being hacked on.  So remove this post-iropt
    // check in "production" use.
-   // sanityCheckIRSB( irsb, "after initial iropt", 
+   // sanityCheckIRSB( irsb, "after initial iropt",
    //                  True/*must be flat*/, guest_word_type );
 
    if (vex_traceflags & VEX_TRACE_OPT1) {
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    " After pre-instr IR optimisation "
                    "------------------------\n\n");
       ppIRSB ( irsb );
@@ -726,7 +731,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
    /* Get the thing instrumented. */
    if (vta->instrument1)
       irsb = vta->instrument1(vta->callback_opaque,
-                              irsb, guest_layout, 
+                              irsb, guest_layout,
                               vta->guest_extents,
                               &vta->archinfo_host,
                               guest_word_type, host_word_type);
@@ -738,9 +743,9 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
                               vta->guest_extents,
                               &vta->archinfo_host,
                               guest_word_type, host_word_type);
-      
+
    if (vex_traceflags & VEX_TRACE_INST) {
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    " After instrumentation "
                    "------------------------\n\n");
       ppIRSB ( irsb );
@@ -766,7 +771,7 @@ IRSB *LibVEX_Lift (  VexTranslateArgs *vta,
    vexAllocSanityCheck();
 
    if (vex_traceflags & VEX_TRACE_OPT2) {
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    " After post-instr IR optimisation "
                    "------------------------\n\n");
       ppIRSB ( irsb );
@@ -850,7 +855,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
    switch (vta->arch_guest) {
 
       case VexArchX86:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = X86FN(guest_x86_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestX86State);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestX86State,host_EvC_COUNTER);
@@ -858,7 +863,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchAMD64:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = AMD64FN(guest_amd64_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestAMD64State);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestAMD64State,host_EvC_COUNTER);
@@ -866,7 +871,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchPPC32:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = PPC32FN(guest_ppc32_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestPPC32State);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestPPC32State,host_EvC_COUNTER);
@@ -874,7 +879,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchPPC64:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = PPC64FN(guest_ppc64_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestPPC64State);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestPPC64State,host_EvC_COUNTER);
@@ -882,7 +887,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchS390X:
-         preciseMemExnsFn 
+         preciseMemExnsFn
             = S390FN(guest_s390x_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestS390XState);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestS390XState,host_EvC_COUNTER);
@@ -890,7 +895,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchARM:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = ARMFN(guest_arm_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestARMState);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestARMState,host_EvC_COUNTER);
@@ -898,7 +903,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchARM64:
-         preciseMemExnsFn     
+         preciseMemExnsFn
             = ARM64FN(guest_arm64_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestARM64State);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestARM64State,host_EvC_COUNTER);
@@ -906,7 +911,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchMIPS32:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = MIPS32FN(guest_mips32_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestMIPS32State);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestMIPS32State,host_EvC_COUNTER);
@@ -914,7 +919,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
          break;
 
       case VexArchMIPS64:
-         preciseMemExnsFn       
+         preciseMemExnsFn
             = MIPS64FN(guest_mips64_state_requires_precise_mem_exns);
          guest_sizeB            = sizeof(VexGuestMIPS64State);
          offB_HOST_EvC_COUNTER  = offsetof(VexGuestMIPS64State,host_EvC_COUNTER);
@@ -1144,7 +1149,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
    vexAllocSanityCheck();
 
    if (vex_traceflags & VEX_TRACE_TREES) {
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    "  After tree-building "
                    "------------------------\n\n");
       ppIRSB ( irsb );
@@ -1159,7 +1164,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
    /* end HACK */
 
    if (vex_traceflags & VEX_TRACE_VCODE)
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    " Instruction selection "
                    "------------------------\n");
 
@@ -1169,7 +1174,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
    vassert(irsb->offsIP >= 16);
 
    vcode = iselSB ( irsb, vta->arch_host,
-                    &vta->archinfo_host, 
+                    &vta->archinfo_host,
                     &vta->abiinfo_both,
                     offB_HOST_EvC_COUNTER,
                     offB_HOST_EvC_FAILADDR,
@@ -1211,7 +1216,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
    vexAllocSanityCheck();
 
    if (vex_traceflags & VEX_TRACE_RCODE) {
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    " Register-allocated code "
                    "------------------------\n\n");
       for (i = 0; i < rcode->arr_used; i++) {
@@ -1223,7 +1228,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
    }
 
    /* HACK */
-   if (0) { 
+   if (0) {
       *(vta->host_bytes_used) = 0;
       res->status = VexTransOK; return;
    }
@@ -1231,7 +1236,7 @@ void LibVEX_Codegen (   VexTranslateArgs *vta,
 
    /* Assemble */
    if (vex_traceflags & VEX_TRACE_ASM) {
-      vex_printf("\n------------------------" 
+      vex_printf("\n------------------------"
                    " Assembly "
                    "------------------------\n\n");
    }
@@ -1522,7 +1527,7 @@ VexInvalRange LibVEX_PatchProfInc ( VexArch    arch_host,
 const HChar* LibVEX_EmNote_string ( VexEmNote ew )
 {
    switch (ew) {
-     case EmNote_NONE: 
+     case EmNote_NONE:
         return "none";
      case EmWarn_X86_x87exns:
         return "Unmasking x87 FP exceptions";
@@ -1573,7 +1578,7 @@ const HChar* LibVEX_EmNote_string ( VexEmNote ew )
      case EmFail_S390X_vx:
         return "Encountered an instruction that requires the vector facility.\n"
                "  That facility is not available on this host";
-     default: 
+     default:
         vpanic("LibVEX_EmNote_string: unknown warning");
    }
 }
@@ -1678,7 +1683,7 @@ static IRType arch_word_size (VexArch arch) {
 /* Return a string showing the hwcaps in a nice way.  The string will
    be NULL for unrecognised hardware capabilities. */
 
-static const HChar* show_hwcaps_x86 ( UInt hwcaps ) 
+static const HChar* show_hwcaps_x86 ( UInt hwcaps )
 {
    static const HChar prefix[] = "x86";
    static const struct {
@@ -1692,7 +1697,7 @@ static const HChar* show_hwcaps_x86 ( UInt hwcaps )
       { VEX_HWCAPS_X86_LZCNT,  "lzcnt"  },
    };
    /* Allocate a large enough buffer */
-   static HChar buf[sizeof prefix + 
+   static HChar buf[sizeof prefix +
                     NUM_HWCAPS * (sizeof hwcaps_list[0].name + 1) + 1]; // '\0'
    if (buf[0] != '\0') return buf;  /* already constructed */
 
@@ -1700,7 +1705,7 @@ static const HChar* show_hwcaps_x86 ( UInt hwcaps )
 
    if (hwcaps == 0) {
       vex_sprintf(p, "-%s", "sse0");
-   } else {      
+   } else {
       UInt i;
       for (i = 0 ; i < NUM_HWCAPS; ++i) {
          if (hwcaps & hwcaps_list[i].hwcaps_bit)
@@ -1726,7 +1731,7 @@ static const HChar* show_hwcaps_amd64 ( UInt hwcaps )
       { VEX_HWCAPS_AMD64_BMI,    "bmi"    },
    };
    /* Allocate a large enough buffer */
-   static HChar buf[sizeof prefix + 
+   static HChar buf[sizeof prefix +
                     NUM_HWCAPS * (sizeof hwcaps_list[0].name + 1) + 1]; // '\0'
    if (buf[0] != '\0') return buf;  /* already constructed */
 
@@ -1734,7 +1739,7 @@ static const HChar* show_hwcaps_amd64 ( UInt hwcaps )
 
    if (hwcaps == 0) {
       vex_sprintf(p, "-%s", "sse2");
-   } else {      
+   } else {
       UInt i;
       for (i = 0 ; i < NUM_HWCAPS; ++i) {
          if (hwcaps & hwcaps_list[i].hwcaps_bit)
@@ -1761,7 +1766,7 @@ static const HChar* show_hwcaps_ppc32 ( UInt hwcaps )
       { VEX_HWCAPS_PPC32_ISA3_0,  "ISA3_0"  },
    };
    /* Allocate a large enough buffer */
-   static HChar buf[sizeof prefix + 
+   static HChar buf[sizeof prefix +
                     NUM_HWCAPS * (sizeof hwcaps_list[0].name + 1) + 1]; // '\0'
    if (buf[0] != '\0') return buf;  /* already constructed */
 
@@ -1792,7 +1797,7 @@ static const HChar* show_hwcaps_ppc64 ( UInt hwcaps )
       { VEX_HWCAPS_PPC64_ISA3_0,  "ISA3_0"  },
    };
    /* Allocate a large enough buffer */
-   static HChar buf[sizeof prefix + 
+   static HChar buf[sizeof prefix +
                     NUM_HWCAPS * (sizeof hwcaps_list[0].name + 1) + 1]; // '\0'
    if (buf[0] != '\0') return buf;  /* already constructed */
 
@@ -1866,7 +1871,7 @@ static const HChar* show_hwcaps_s390x ( UInt hwcaps )
       { VEX_HWCAPS_S390X_PFPO,  "pfpo" },
    };
    /* Allocate a large enough buffer */
-   static HChar buf[sizeof prefix + 
+   static HChar buf[sizeof prefix +
                     NUM_HWCAPS * (sizeof hwcaps_list[0].name + 1) + 1]; // '\0'
 
    if (buf[0] != '\0') return buf;  /* already constructed */

@@ -49,11 +49,11 @@
 /*--- Architectures, variants, and other arch info    ---*/
 /*-------------------------------------------------------*/
 
-typedef 
-   enum { 
+typedef
+   enum {
       VexArch_INVALID=0x400,
-      VexArchX86, 
-      VexArchAMD64, 
+      VexArchX86,
+      VexArchAMD64,
       VexArchARM,
       VexArchARM64,
       VexArchPPC32,
@@ -342,7 +342,7 @@ typedef
    VexArchInfo;
 
 /* Write default settings info *vai. */
-extern 
+extern
 void LibVEX_default_VexArchInfo ( /*OUT*/VexArchInfo* vai );
 
 
@@ -388,7 +388,7 @@ void LibVEX_default_VexArchInfo ( /*OUT*/VexArchInfo* vai );
 
 typedef
    struct {
-      /* PPC and AMD64 GUESTS only: how many bytes below the 
+      /* PPC and AMD64 GUESTS only: how many bytes below the
          stack pointer are validly addressible? */
       Int guest_stack_redzone_size;
 
@@ -428,7 +428,7 @@ typedef
    VexAbiInfo;
 
 /* Write default settings info *vbi. */
-extern 
+extern
 void LibVEX_default_VexAbiInfo ( /*OUT*/VexAbiInfo* vbi );
 
 
@@ -458,7 +458,7 @@ void LibVEX_default_VexAbiInfo ( /*OUT*/VexAbiInfo* vbi );
      exception.
 
      VexRegUpdAllregsAtEachInsn: all registers up to date at each
-     instruction. 
+     instruction.
 */
 typedef
    enum {
@@ -537,7 +537,7 @@ typedef
 
 /* Write the default settings into *vcon. */
 
-extern 
+extern
 void LibVEX_default_VexControl ( /*OUT*/ VexControl* vcon );
 
 
@@ -724,15 +724,15 @@ typedef
 
       /* IN: optionally, two instrumentation functions.  May be
 	 NULL. */
-      IRSB*   (*instrument1) ( /*callback_opaque*/void*, 
-                               IRSB*, 
-                               const VexGuestLayout*, 
+      IRSB*   (*instrument1) ( /*callback_opaque*/void*,
+                               IRSB*,
+                               const VexGuestLayout*,
                                const VexGuestExtents*,
                                const VexArchInfo*,
                                IRType gWordTy, IRType hWordTy );
-      IRSB*   (*instrument2) ( /*callback_opaque*/void*, 
-                               IRSB*, 
-                               const VexGuestLayout*, 
+      IRSB*   (*instrument2) ( /*callback_opaque*/void*,
+                               IRSB*,
+                               const VexGuestLayout*,
                                const VexGuestExtents*,
                                const VexArchInfo*,
                                IRType gWordTy, IRType hWordTy );
@@ -822,12 +822,13 @@ typedef
    VexTranslateArgs;
 
 
-extern 
+extern
 VexTranslateResult LibVEX_Translate ( VexTranslateArgs* );
 extern
 IRSB *LibVEX_Lift ( VexTranslateArgs*,
                     VexTranslateResult*,
-                    VexRegisterUpdates* );
+                    VexRegisterUpdates*,
+                    Bool);
 extern
 void LibVEX_Codegen ( VexTranslateArgs*,
                       VexTranslateResult*,
@@ -854,7 +855,7 @@ void LibVEX_Codegen ( VexTranslateArgs*,
 /*--- Patch existing translations                     ---*/
 /*-------------------------------------------------------*/
 
-/* A host address range that was modified by the functions below. 
+/* A host address range that was modified by the functions below.
    Callers must request I-cache syncing after the call as appropriate. */
 typedef
    struct {
@@ -916,7 +917,7 @@ extern void LibVEX_ShowStats ( void );
 
 #define NO_ROUNDING_MODE (~0u)
 
-typedef 
+typedef
    struct {
       IROp  op;        // the operation to perform
       HWord result;    // address of the result
